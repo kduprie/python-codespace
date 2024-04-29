@@ -1,15 +1,11 @@
-# from typing import TypedDict
-from dataclasses import dataclass
-from typing_extensions import TypedDict
+from sqlalchemy import Column, Integer, String, Float
+
+from database import Base
 
 
-class ColorDict(TypedDict):
-    id: int
-    name: str
-    hex_code: str
+class Color(Base):
+    __tablename__ = "colors"
 
-@dataclass
-class ColorDataClass:
-    id: int
-    name: str
-    hex_code: str
+    id = Column(Integer, primary_key = True)
+    name = Column(String)
+    hex_code = Column(String)

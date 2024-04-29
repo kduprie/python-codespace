@@ -18,3 +18,9 @@ async def create_car(car: CarModelCreate) -> CarModelClass:
 
     return CarModelClass(1,car.make, car.model, car.year, car.color, car.price)
 
+@app.post("/cars2", response_model=CarModel)
+async def create_car2(car: CarModelCreate) -> CarModelDict:
+    print(car)
+
+    return {"id": 1, "make": car.make, "model": car.model, "year": car.year, "color": car.color, "price": car.price}
+
