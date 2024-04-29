@@ -1,0 +1,11 @@
+GET http://127.0.0.1:8000/cars
+
+###
+GET http://127.0.0.1:8000/stars
+
+###
+POST http://127.0.0.1:8000/cars
+Content-Type: application/json
+
+{ "make": "saturn", "model" : "buck", "year": 2013 , "color": "silver" , "price": 10000}
+ 
