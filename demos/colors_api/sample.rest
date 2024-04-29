@@ -1,0 +1,12 @@
+GET http://127.0.0.1:8000/colors
+
+###
+GET http://127.0.0.1:8000/stars
+
+###
+GET http://127.0.0.1:8000/planets
+
+###
+GET http://127.0.0.1:8000/planets2
+
+
