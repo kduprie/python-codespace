@@ -1,22 +1,18 @@
 from pydantic import BaseModel
 
-class BaseCarModel(BaseModel):
+class BaseCar(BaseModel):
     make: str
     model: str
     year: int
     color: str
     price: float
 
-class CarModelCreate(BaseCarModel):
+class CarCreate(BaseCar):
     ...
 
-class CarModel(BaseCarModel):
+class Car(BaseCar):
     id: int
 
-# class CarModel(BaseModel):
-#     id: int
-#     make: str
-#     model: str
-#     year: int
-#     color: str
-#     price: float
+    class Config:
+        from_attributes = True
+

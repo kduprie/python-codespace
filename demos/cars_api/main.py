@@ -1,26 +1,35 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import Generator, Any
 
-from schemas import CarModel, CarModelCreate
-from models import CarModelDict, CarModelClass
+import crud
+import models
+import schemas
+from database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-@app.get("/cars", response_model=list[CarModel])
-async def all_cars() -> list[CarModelDict]:
-    return[
-        {"id": 1, "make": "Toyota", "model": "Highlander", "year": 2024, "color": "red", "price": 1234.56},
-        {"id": 2, "make": "Honda", "model": "Civic", "year": 2014, "color": "blue", "price": 9876.54},
-    ]
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-@app.post("/cars", response_model=CarModel)
-async def create_car(car: CarModelCreate) -> CarModelClass:
-    print(car)
+@app.get("/")
+async def root() -> dict[str, Any]:
+    return {"message": "hello"}
 
-    return CarModelClass(1,car.make, car.model, car.year, car.color, car.price)
+@app.get("/cars", response_model=list[schemas.Car])
+async def all_cars(db: Session = Depends(get_db)) -> list[models.Car]:
+    return crud.get_cars(db)
 
-@app.post("/cars2", response_model=CarModel)
-async def create_car2(car: CarModelCreate) -> CarModelDict:
-    print(car)
+@app.post("/cars", response_model=schemas.Car)
+async def create_car(
+    car: schemas.CarCreate,
+    db: Session = Depends(get_db)
+) -> models.Car:
 
-    return {"id": 1, "make": car.make, "model": car.model, "year": car.year, "color": car.color, "price": car.price}
-
+    return crud.create_car(db, car)

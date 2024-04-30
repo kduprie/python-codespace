@@ -29,4 +29,3 @@ async def create_color(
     color: schemas.ColorCreate, db: Session = Depends(get_db)
 ) -> models.Color:
     return crud.create_color(db, color)
-

@@ -1,20 +1,12 @@
-from typing import TypedDict
-from dataclasses import dataclass
+from sqlalchemy import Column, Integer, String, Float
+from database import Base
 
-class CarModelDict(TypedDict):
-    id: int
-    make: str
-    model: str
-    year: int
-    color: str
-    price: float
-
-@dataclass
-class CarModelClass:
-    id: int
-    make: str
-    model: str
-    year: int
-    color: str
-    price: float
+class Car(Base):
+    __tablename__ = "cars"
     
+    id = Column(Integer, primary_key=True)
+    make = Column(String)
+    model = Column(String)
+    year = Column(Integer)
+    color = Column(String)
+    price = Column(Float)
