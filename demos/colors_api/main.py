@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import Generator
+from fastapi import FastAPI, Depends
+from typing import Annotated
+import uvicorn
 
-import crud
+from services.colors_sql_data import ColorsSqlData
 import models
 import schemas
-from database import SessionLocal, engine
+from database import engine
 
 # ensures all tables are created
 models.Base.metadata.create_all(bind=engine)
@@ -13,19 +13,22 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @app.get("/colors", response_model=list[schemas.Color])
-async def all_colors(db: Session = Depends(get_db)) -> list[models.Color]:
-    return crud.get_colors(db)
+async def all_colors(
+    colors_sql_data: Annotated[ColorsSqlData, Depends(ColorsSqlData)],
+) -> list[models.Color]:
+    return colors_sql_data.get_colors()
 
 @app.post("/colors", response_model=schemas.Color)
 async def create_color(
-    color: schemas.ColorCreate, db: Session = Depends(get_db)
+    color: schemas.ColorCreate,
+    colors_sql_data: Annotated[ColorsSqlData, Depends(ColorsSqlData)],
 ) -> models.Color:
-    return crud.create_color(db, color)
+    return colors_sql_data.create_color(color)
+
+def main() -> None:
+    uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)
+    
+if __name__ == "__main__":
+    main()
