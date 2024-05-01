@@ -7,3 +7,4 @@ Content-Type: application/json
     "recipient_email": "broker@somedomain.com",
     "message": "This is fun"
 }
+

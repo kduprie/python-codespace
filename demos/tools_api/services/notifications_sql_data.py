@@ -13,7 +13,6 @@ class NotificationsSqlData:
     def create_notification(self, notification: schemas.NotificationCreate,
                             ) -> models.Notification:
         print("waiting to save message")
-        time.sleep(5)
         print("saving message")
         notification_model = models.Notification(
             recipient_email = notification.recipient_email,

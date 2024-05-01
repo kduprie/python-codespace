@@ -77,17 +77,20 @@ async def delete_car(
 
     try:
         car_model = cars_sql_data.delete_car(car_id)
-        if car_model is None:
-            raise HTTPException(status_code=404, detail="Car not found")
-        notify_status = notify_api(
-            "broker@somedomain.com", f"Deleted car with id {car_model.id}"
-        )
-        if notify_status == "received":
-            return car_model
-        raise Exception("unable to notify")
+        if car_model is not None:
+            notify_status = notify_api(
+                "broker@somedomain.com", f"Deleted car with id {car_model.id}"
+            )
+            if notify_status != "received":
+                raise Exception("unable to notify")
     except Exception as exc:
         logging.error("database call failed", exc_info=exc)
         raise HTTPException(status_code=500, detail="Internal errr")
+
+    if car_model is None:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    return car_model
 
 @app.post("/cars", response_model=schemas.Car)
 async def create_car(
