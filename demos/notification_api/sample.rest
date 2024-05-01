@@ -1,0 +1,9 @@
+
+###
+POST http://127.0.0.1:8001/notify
+Content-Type: application/json
+
+{
+    "recipient_email": "broker@somedomain.com",
+    "message": "This is fun"
+}

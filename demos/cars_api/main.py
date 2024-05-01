@@ -1,7 +1,8 @@
 import logging
 from fastapi import FastAPI, Depends, HTTPException
-from typing import Annotated, Any
+from typing import Annotated, Any, Callable
 import uvicorn
+from services.notification import notify
 
 from services.cars_sql_data import CarsSqlData
 import models
@@ -11,6 +12,8 @@ from database import  engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+NotifyType = Annotated[Callable[[str,str],str], Depends(notify)]
 
 
 @app.get("/")
@@ -66,23 +69,43 @@ async def replace_car(
 async def delete_car(
     car_id: int,
     cars_sql_data: Annotated[CarsSqlData, Depends(CarsSqlData)],
+    notify_api: NotifyType,
 ) -> models.Car:
 
     if car_id < 1:
         raise HTTPException(status_code=400, detail="Invalid car id")
 
-    car_model = cars_sql_data.delete_car(car_id)
-    if car_model is None:
-        raise HTTPException(status_code=404, detail="Car not found")
-
-    return car_model
+    try:
+        car_model = cars_sql_data.delete_car(car_id)
+        if car_model is None:
+            raise HTTPException(status_code=404, detail="Car not found")
+        notify_status = notify_api(
+            "broker@somedomain.com", f"Deleted car with id {car_model.id}"
+        )
+        if notify_status == "received":
+            return car_model
+        raise Exception("unable to notify")
+    except Exception as exc:
+        logging.error("database call failed", exc_info=exc)
+        raise HTTPException(status_code=500, detail="Internal errr")
 
 @app.post("/cars", response_model=schemas.Car)
 async def create_car(
     car: schemas.CarCreate,
     cars_sql_data: Annotated[CarsSqlData, Depends(CarsSqlData)],
+    notify_api: NotifyType,
 ) -> models.Car:
-    return cars_sql_data.create_car(car)
+    try:
+        created_car = cars_sql_data.create_car(car)
+        notify_status = notify_api(
+            "broker@somedomain.com", f"Added car with id {created_car.id}"
+        )
+        if notify_status == "received":
+            return created_car
+        raise Exception("unable to notify")
+    except Exception as exc:
+        logging.error("database call failed", exc_info=exc)
+        raise HTTPException(status_code=500, detail="Internal errr")
 
 def main() -> None:
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)
