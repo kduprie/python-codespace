@@ -1,0 +1,56 @@
+GET http://127.0.0.1:8000/colors
+
+###
+GET http://127.0.0.1:8000/stars
+
+###
+GET http://127.0.0.1:8000/planets
+
+###
+GET http://127.0.0.1:8000/planets2
+
+###
+
+POST http://127.0.0.1:8000/colors
+Content-Type: application/json
+
+{ "name": "purple", "hex_code" : "#FF00FF" }
+
+###
+
+GET http://127.0.0.1:8000/colors/1
+
+###
+DELETE http://127.0.0.1:8000/colors/9
+
+###
+PUT http://127.0.0.1:8000/colors/11
+Content-Type: application/json
+
+{ "name": "purple", "hex_code" : "FF00FF" }
+
+###
+
+GET http://127.0.0.1:8000/cars/2
+
+###
+GET http://127.0.0.1:8000/stars
+
+###
+POST http://127.0.0.1:8000/cars
+Content-Type: application/json
+
+{ "make": "saturn", "model" : "buck", "year": 1995 , "color": "silver" , "price": 10000.0}
+
+###
+ 
+POST http://127.0.0.1:8000/cars2
+Content-Type: application/json
+
+{ "make": "SATURN", "model" : "buck", "year": 2013 , "color": "silver" , "price": 10000}
+
+###
+POST http://127.0.0.1:8000/cars
+Content-Type: application/json
+
+{ "make": "Toyota", "model": "Sienna", "year": 2004, "color": "light blue", "price": 30000.0 }
