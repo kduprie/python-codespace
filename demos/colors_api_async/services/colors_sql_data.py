@@ -4,7 +4,11 @@ from sqlalchemy.future import select
 
 import models
 import schemas
-from database import get_db_session
+from services.get_db_session import get_db_session
+
+from pathlib import Path
+import csv
+import json
 
 class ColorsSqlData:
     def __init__(
@@ -35,6 +39,22 @@ class ColorsSqlData:
         await self.__db_session.refresh(color_model)
         return color_model
 
+    async def bulk_create_colors(
+            self,
+            colors: list[schemas.ColorCreate]
+    ) -> list[models.Color]:
+        color_models = [
+            models.Color(name=color.name, hex_code=color.hex_code)
+            for color in colors
+        ]
+
+        self.__db_session.add_all(color_models)
+        await self.__db_session.commit()
+        for color_model in color_models:
+           await self.__db_session.refresh(color_model)
+
+        return color_models
+
     async def update_color(self, color: schemas.Color) -> models.Color | None:
         color_model = await self.get_color(color.id)
         if color_model is None:
@@ -54,4 +74,25 @@ class ColorsSqlData:
         await self.__db_session.delete(color_model)
         await self.__db_session.commit()
         return color_model
+
+#     async def load_from_file(self, file_name: str) -> list[models.Color] | None:
+#         # read file. Move this someplace else
+#         html_colors: list[tuple[str, str]] = []
+#         color_models: list[models.Color] = []
+#         with Path(file_name).open("r", encoding="utf-8") as file:
+#             csv_file = csv.reader(file)
+#            next(csv_file)
+#             for row in csv_file:
+#               html_colors.append((row[0], row[1]))
+#               color_model = models.Color(name=row[0], hex_code=row[1])
+#
+#         if len(color_models) < 1:
+#             return None
+#
+#         self.__db_session.add_all(color_models)
+#         await self.__db_session.commit()
+#         for color_model in color_models:
+#             await self.__db_session.refresh(color_model)
+#
+#         return color_models
 

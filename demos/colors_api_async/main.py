@@ -1,9 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
-from typing import Annotated, AsyncGenerator, Any
+from typing import Annotated, AsyncGenerator
 import uvicorn
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.colors_sql_data import ColorsSqlData
 import models
@@ -12,7 +10,7 @@ from database import sessionmanager
 # from database import engine
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[Any, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if sessionmanager.engine is None:
         raise Exception("Database engine is not initialized")
     async with sessionmanager.engine.begin() as conn:
@@ -23,7 +21,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, None]:
         # close the db engine
         await sessionmanager.close()
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/colors", response_model=list[schemas.Color])
@@ -86,6 +84,28 @@ async def create_color(
     colors_sql_data: Annotated[ColorsSqlData, Depends(ColorsSqlData)],
 ) -> models.Color:
     return await colors_sql_data.create_color(color)
+
+@app.post("/colors/bulk", response_model=list[schemas.Color])
+async def bulk_create_colors(
+    colors: list[schemas.ColorCreate],
+    colors_sql_data: Annotated[ColorsSqlData, Depends(ColorsSqlData)],
+) -> list[models.Color]:
+    try:
+        return await colors_sql_data.bulk_create_colors(colors)
+        print(colors)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="File is empty")
+
+# @app.post("/colors/bulk/{file_name}", response_model=list[schemas.Color])
+# async def create_from_file(
+#     file_name: str,
+#     colors_sql_data: Annotated[ColorsSqlData, Depends(ColorsSqlData)],
+# ) -> list[models.Color]:
+#     color_models = await colors_sql_data.load_from_file(file_name)
+#     if color_models is None:
+#         raise HTTPException(status_code=400, detail="File is empty")
+#
+#     return color_models
 
 def main() -> None:
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)
